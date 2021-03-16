@@ -75,59 +75,16 @@ print(xtable(desviacionesStd,
 
 # diagrama caja con bigotes
 
-# para evitar largas encadenaciones de codigo
-df.floracion <- subset(df, DESARROLLO == 'FLORACION')
-df.fructificacion <- subset(df, DESARROLLO == 'FRUCTIFICACION')
-
-par(mfrow = c(1, 1))
-
-#boxplot(c(df.floracion[3], df.fructificacion[3]),
-#        col = c('red', 'blue'),
-#        main = 'ORUGAS',
-#        ylab = 'cantidad por metro lineal de surco',
-#        names = c('FLORACION', 'FRUCTIFICACION')
-#)
-# version elegante
 plot(ORUGAS ~ DESARROLLO,
      data = df,
      col = c('red', 'cyan'))
 
-#boxplot(c(df.floracion[4], df.fructificacion[4]),
-#        col = c('red', 'blue'),
-#        main = 'DEFOLIACION',
-#        ylab = 'porcentaje',
-#        names = c('FLORACION', 'FRUCTIFICACION')
-#)
-# version elegante
 plot(DEFOLIACION ~ DESARROLLO,
      data = df,
      col = c('red', 'cyan'))
 
 # graficos de dispersion
 
-## prueba nativa
-#grid()
-#
-#plot(df.floracion$ORUGAS, df.floracion$DEFOLIACION,
-#  pch = 4)
-#
-#identify(df.floracion$ORUGAS, df.floracion$DEFOLIACION,
-#         labels = paste0('(',
-#                         round(df.floracion$ORUGAS, 2),
-#                         ',',
-#                         round(df.floracion$DEFOLIACION,2),
-#                         ')'))
-#
-#plot(df.floracion$ORUGAS, df.floracion$DEFOLIACION,
-#     pch = as.numeric(grupo),
-#     col = grupo)
-#
-#legend("topleft",
-#       legend = c('FLORACION','FRUCTIFICACION'),
-#       lwd = 2,
-#       col = c('black', 'red'))
-
-###
 library(ggplot2)
 
 desarrollo <- as.factor(
@@ -148,38 +105,53 @@ ggplot(scatter_df, aes(x = x, y = y)) +
 # FLORACION: DEFOLIACION >= 30 & ORUGAS >= 20
 # FRUCTIFICACION: DEFOLIACION > 8 & ORUGAS >= 10
 
-aFumigar_floracion_defo <- subset(data.frame(na.exclude(subset(df,
-  DEFOLIACION > 29))),
+# 1. creamos un subconjunto con las condiciones necesarias
+# 2. eliminamos las filas NaN (Not a Number) resultantes de
+#    no cumplir con las condiciones
+# 3. lo convertimos a un tipo data.frame para 4.
+# 4. creamos un subconjunto con la variable DESARROLLO de interes
+# entonces:
+
+# 4.
+aFumigar_floracion <- subset(
+  # 3.
+  data.frame(
+    # 2.
+    na.exclude(
+      # 1.
+      subset(df, DEFOLIACION > 29 & ORUGAS > 19)
+    )
+  ),
   DESARROLLO == 'FLORACION',
   select = Productor)
 
-aFumigar_floracion_orug <- subset(data.frame(na.exclude(subset(df,
-  ORUGAS > 19))),
-  DESARROLLO == 'FLORACION',
-  select = Productor)
-
-aFumigar_fructificacion_defo <- subset(data.frame(na.exclude(subset(df,
-  DEFOLIACION > 8))),
-  DESARROLLO == 'FRUCTIFICACION',
-  select = Productor)
-
-aFumigar_fructificacion_orug <- subset(data.frame(na.exclude(subset(df,
-  ORUGAS > 9))),
+aFumigar_fructificacion <- subset(
+  data.frame(
+    na.exclude(
+      subset(df, DEFOLIACION > 8 & ORUGAS > 9)
+    )
+  ),
   DESARROLLO == 'FRUCTIFICACION',
   select = Productor)
 
 FUMIGACION <- rep(FALSE, dim(df)[1])
 df$FUMIGACION <- FUMIGACION
 
+# ningun Productor tiene los dos estados de DESARROLLO
 df$FUMIGACION <- is.element(df$Productor, c(
-  aFumigar_floracion_defo$Productor,
-  aFumigar_floracion_orug$Productor,
-  aFumigar_fructificacion_defo$Productor,
-  aFumigar_fructificacion_orug$Productor))
+  aFumigar_floracion$Productor,
+  aFumigar_fructificacion$Productor))
 
+tabla_plantaciones <- cbind(c('FLORACION', 'FRUCTIFICACION'),
+                            c(13, 28))
 
+colnames(tabla_plantaciones) <- c('Desarrollo',
+                                  'Cantidad')
 
-
-
-
+print(xtable(tabla_plantaciones,
+             type = 'latex',
+             caption = 'Cantidad de plantaciones que deben
+             fumigarse por estado de DESARROLLO',
+             label = 'table:plantacionesAfumigar'),
+      file = 'plantaciones.tex')
 
