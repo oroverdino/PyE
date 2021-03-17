@@ -8,7 +8,9 @@
 library(xtable)
 
 # cargamos el archivo csv
-df_raw <- as.data.frame(read.csv('./PlagasSoja.csv'))
+if(file.exists('./PlagasSoja.csv')){
+  df_raw <- as.data.frame(read.csv('./PlagasSoja.csv'))
+}
 
 # analizamos sus tipos de variables
 sapply(df_raw, class)
@@ -28,16 +30,14 @@ orugas <- cbind(
   as.matrix(summary(df$ORUGAS[df$DESARROLLO == 'FRUCTIFICACION']))
 )
 
-colnames(orugas)[1] <- 'FLORACION'
-colnames(orugas)[2] <- 'FRUCTIFICACION'
+colnames(orugas) <- c('FLORACION', 'FRUCTIFICACION')
 
 defoliacion <- cbind(
   as.matrix(summary(df$DEFOLIACION[df$DESARROLLO == 'FLORACION'])),
   as.matrix(summary(df$DEFOLIACION[df$DESARROLLO == 'FRUCTIFICACION']))
 )
 
-colnames(defoliacion)[1] <- 'FLORACION'
-colnames(defoliacion)[2] <- 'FRUCTIFICACION'
+colnames(defoliacion) <- c('FLORACION', 'FRUCTIFICACION')
 
 print(xtable(orugas,
              type = 'latex',
@@ -155,3 +155,11 @@ print(xtable(tabla_plantaciones,
              label = 'table:plantacionesAfumigar'),
       file = 'plantaciones.tex')
 
+#####
+install.packages(data.table)
+library(data.table)
+
+dftable <- as.data.table(df)
+
+aFumigar_floracion <- dftable[ORUGAS > 19 & DEFOLIACION > 29, .N, DESARROLLO == 'FLORACION']
+aFumigar_fructificacion <- dftable[ORUGAS > 9 & DEFOLIACION > 8, .N, DESARROLLO == 'FRUCTIFICACION']
