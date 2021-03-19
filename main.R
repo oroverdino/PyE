@@ -1,10 +1,9 @@
 # Title     : Trabajo Integrador
-# Created by: leandro
 # Created on: 3/11/21
 
 ## EJERCICIO 1
 
-# librerias
+# libreria para la creacion de tablas en latex
 library(xtable)
 
 # cargamos el archivo csv
@@ -168,37 +167,6 @@ plot(hist_fruc,
      main = '',
      col = 'cyan')
 
-## histograma floracion
-# es una estupidez
-#
-#hist_flor_orugas <- hist(dftable[DESARROLLO == 'FLORACION', ORUGAS],
-#                         breaks = 8)
-#
-#hist_flor_defoliacion <- hist(dftable[DESARROLLO == 'FLORACION', DEFOLIACION],
-#                         breaks = 8)
-#
-#range(c(hist_flor_orugas$breaks, hist_flor_defoliacion$breaks))
-#
-#max(c(hist_flor_orugas$counts, hist_flor_defoliacion$counts))
-#
-#par(mfrow = c(2, 1))
-#
-#plot(hist_flor_orugas,
-#     col = 'green',
-#     xlim = c(0, 55),
-#     ylim = c(0, 16),
-#     xlab = 'ORUGAS por metro lineal de surco',
-#     main = 'FLORACION'
-#)
-#
-#plot(hist_flor_defoliacion,
-#     col = 'yellow',
-#     xlim = c(0, 55),
-#     ylim = c(0, 16),
-#     xlab = 'DEFOLIACION, porcentaje',
-#     main = ''
-#)
-
 ## EJERCICIO 2
 #
 # FLORACION: DEFOLIACION >= 30 & ORUGAS >= 20
@@ -241,12 +209,14 @@ df$FUMIGACION <- is.element(df$Productor, c(
   aFumigar_floracion$Productor,
   aFumigar_fructificacion$Productor))
 
-#####
+# el pqt data.table nos limpia el codigo
+#
 #install.packages(data.table)
 library(data.table)
 
 dftable <- as.data.table(df)
 
+# creamos la tabla para imprimir
 tabla_plantaciones <- dftable[FUMIGACION == TRUE, .N, by = .(DESARROLLO)]
 
 print(xtable(tabla_plantaciones,
@@ -254,6 +224,14 @@ print(xtable(tabla_plantaciones,
              caption = 'Cantidad de plantaciones que deben fumigarse',
              label = 'table:plantacionesAfumigar'),
       file = 'plantaciones.tex')
+
+# encuadramos la tabla completa
+# *** en el script latex debimos hacer modificaciones ***
+print(xtable(dftable,
+             type = 'latex',
+             caption = 'Base de datos modificada',
+             label = 'table:dftable'),
+      file = 'dftable_full.tex')
 
 ## EJERCICIO 3
 #
