@@ -10,6 +10,8 @@ library(xtable)
 # cargamos el archivo csv
 if(file.exists('./PlagasSoja.csv')){
   df_raw <- as.data.frame(read.csv('./PlagasSoja.csv'))
+} else {
+  print('El archivo csv no está en este directorio')
 }
 
 # analizamos sus tipos de variables
@@ -100,6 +102,103 @@ ggplot(scatter_df, aes(x = x, y = y)) +
   theme_bw() +
   theme(legend.position = 'top', legend.justification = 'center')
 
+## histogramas orugas
+
+# 1. creamos los histogramas
+hist_flor <- hist(df$ORUGAS[df$DESARROLLO == 'FLORACION'],
+     breaks = 8)
+
+hist_fruc <- hist(df$ORUGAS[df$DESARROLLO == 'FRUCTIFICACION'],
+                  breaks = 8)
+
+# 2. determinamos el rango del eje x combinados
+range(c(hist_flor$breaks, hist_fruc$breaks))
+
+# 3. determinamos el rango del eje y combinados
+max(c(hist_flor$counts, hist_fruc$counts))
+
+# preparamos un plot de 3 filas en una columna
+par(mfrow = c(2, 1))
+
+# graficamos el histograma floracion
+plot(hist_flor,
+     col = 'red',
+     xlim = c(2, 30),
+     ylim = c(0, 18),
+     xlab = 'FLORACION',
+     main = 'cantidad ORUGAS por metro lineal de surco'
+)
+
+# luego el de fructificacion
+plot(hist_fruc,
+     add = FALSE,
+     xlim = c(2, 30),
+     ylim = c(0, 18),
+     xlab = 'FRUCTIFICACION',
+     main = '',
+     col = 'cyan')
+
+## histogramas defoliacion
+
+hist_flor <- hist(df$DEFOLIACION[df$DESARROLLO == 'FLORACION'],
+                  breaks = 8)
+
+hist_fruc <- hist(df$DEFOLIACION[df$DESARROLLO == 'FRUCTIFICACION'],
+                  breaks = 8)
+
+range(c(hist_flor$breaks, hist_fruc$breaks))
+
+max(c(hist_flor$counts, hist_fruc$counts))
+
+par(mfrow = c(2, 1))
+
+plot(hist_flor,
+     col = 'red',
+     xlim = c(0, 60),
+     ylim = c(0, 20),
+     xlab = 'FLORACION',
+     main = 'porcentaje de DEFOLIACION'
+)
+
+plot(hist_fruc,
+     add = FALSE,
+     xlim = c(0, 60),
+     ylim = c(0, 20),
+     xlab = 'FRUCTIFICACION',
+     main = '',
+     col = 'cyan')
+
+## histograma floracion
+# es una estupidez
+#
+#hist_flor_orugas <- hist(dftable[DESARROLLO == 'FLORACION', ORUGAS],
+#                         breaks = 8)
+#
+#hist_flor_defoliacion <- hist(dftable[DESARROLLO == 'FLORACION', DEFOLIACION],
+#                         breaks = 8)
+#
+#range(c(hist_flor_orugas$breaks, hist_flor_defoliacion$breaks))
+#
+#max(c(hist_flor_orugas$counts, hist_flor_defoliacion$counts))
+#
+#par(mfrow = c(2, 1))
+#
+#plot(hist_flor_orugas,
+#     col = 'green',
+#     xlim = c(0, 55),
+#     ylim = c(0, 16),
+#     xlab = 'ORUGAS por metro lineal de surco',
+#     main = 'FLORACION'
+#)
+#
+#plot(hist_flor_defoliacion,
+#     col = 'yellow',
+#     xlim = c(0, 55),
+#     ylim = c(0, 16),
+#     xlab = 'DEFOLIACION, porcentaje',
+#     main = ''
+#)
+
 ## EJERCICIO 2
 #
 # FLORACION: DEFOLIACION >= 30 & ORUGAS >= 20
@@ -142,24 +241,29 @@ df$FUMIGACION <- is.element(df$Productor, c(
   aFumigar_floracion$Productor,
   aFumigar_fructificacion$Productor))
 
-tabla_plantaciones <- cbind(c('FLORACION', 'FRUCTIFICACION'),
-                            c(13, 28))
-
-colnames(tabla_plantaciones) <- c('Desarrollo',
-                                  'Cantidad')
-
-print(xtable(tabla_plantaciones,
-             type = 'latex',
-             caption = 'Cantidad de plantaciones que deben
-             fumigarse por estado de DESARROLLO',
-             label = 'table:plantacionesAfumigar'),
-      file = 'plantaciones.tex')
-
 #####
-install.packages(data.table)
+#install.packages(data.table)
 library(data.table)
 
 dftable <- as.data.table(df)
 
-aFumigar_floracion <- dftable[ORUGAS > 19 & DEFOLIACION > 29, .N, DESARROLLO == 'FLORACION']
-aFumigar_fructificacion <- dftable[ORUGAS > 9 & DEFOLIACION > 8, .N, DESARROLLO == 'FRUCTIFICACION']
+tabla_plantaciones <- dftable[FUMIGACION == TRUE, .N, by = .(DESARROLLO)]
+
+print(xtable(tabla_plantaciones,
+             type = 'latex',
+             caption = 'Cantidad de plantaciones que deben fumigarse',
+             label = 'table:plantacionesAfumigar'),
+      file = 'plantaciones.tex')
+
+## EJERCICIO 3
+#
+# Asumimos Poisson, con lambda = 9
+
+P12 <- 1 - ppois(12, 9)
+
+# para encontrar la proporcion de campos en fructificacion
+# donde se encuentran mas de 12 orugas
+
+P12_fruct <- dftable[DESARROLLO == 'FRUCTIFICACION', .N, ORUGAS > 12]
+
+proporcion <- P12_fruct$N[2] / sum(P12_fruct$N)
