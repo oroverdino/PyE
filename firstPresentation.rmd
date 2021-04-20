@@ -1,0 +1,66 @@
+---
+title: "Unidad 5"
+author: leandro
+date: 3/28/21
+output: html_notebook
+---
+#output: ioslides_presentation
+
+# Primer caso
+
+## Todas las muestras
+
+```{r, echo = TRUE}
+poblacion <- c(3,6,9,12,15)
+
+muestras <- t(combn(poblacion, 3, sample))
+
+medias <- rowMeans(muestras)
+medianas <- apply(muestras, 1, median)
+```
+
+### frecAbs de medias
+```{r, echo = TRUE}
+dfMedias <- as.data.frame(table(medias)/length(medias))
+head(dfMedias)
+
+# frecAbs de medianas
+dfMedianas <- as.data.frame(table(medianas)/length(medianas))
+head(dfMedianas)
+```
+
+## Histograma Medias
+
+```{r}
+plot(dfMedias, ylim = c(0, .3), str = 3)
+```
+
+## Histograma Medianas
+```{r}
+plot(dfMedianas, ylim = c(0, .45), str = 3)
+```
+
+# Caso 2
+
+## Tomando un muestreo
+
+```{r}
+
+x <- 1:15
+
+set.seed(2021)
+
+muestras <- list()
+
+for (i in 1:350) {
+  muestras[[i]] <- sample(x, 5)
+}
+
+muestras <- do.call(rbind, muestras)
+
+muestras <- unique(muestras)
+
+mediasMuestrales <- rowMeans(muestras)
+
+medianasMuestrales <- apply(muestras, 2, median)
+```

@@ -55,24 +55,51 @@ print(xtable(defoliacion,
 
 # calculamos el coeficiente de variacion para comparar
 # con la std dev en una tabla
-CV <- apply(df[,c(-1,-2)], 2, function (X){
+CV_floracion <- apply(cbind(df$ORUGAS[df$DESARROLLO == 'FLORACION'], df$DEFOLIACION[df$DESARROLLO == 'FLORACION']), 2,
+function (X){
   cv <- sd(X) / mean(X)
   return(cv)
 })
 
-stdDev <- apply(df[,c(-1,-2)], 2, function (X){
+CV_fructificacion <- apply(cbind(df$ORUGAS[df$DESARROLLO == 'FRUCTIFICACION'], df$DEFOLIACION[df$DESARROLLO == 'FRUCTIFICACION']), 2,
+                      function (X){
+                        cv <- sd(X) / mean(X)
+                        return(cv)
+                      })
+
+stdDev_floracion <- apply(cbind(df$ORUGAS[df$DESARROLLO == 'FLORACION'], df$DEFOLIACION[df$DESARROLLO == 'FLORACION']), 2,
+function (X){
   stddev <- sd(X)
   return(stddev)
 })
 
-desviacionesStd <- data.frame(stdDev, CV)
+stdDev_fructificacion <- apply(cbind(df$ORUGAS[df$DESARROLLO == 'FRUCTIFICACION'], df$DEFOLIACION[df$DESARROLLO == 'FRUCTIFICACION']), 2,
+function (X){
+  stddev <- sd(X)
+  return(stddev)
+})
 
-print(xtable(desviacionesStd,
+desviacionesStd_flo <- data.frame(c('ORUGAS', 'DEFOLIACION'), stdDev_floracion, CV_floracion)
+colnames(desviacionesStd_flo) <- c('', 's_floracion', 'CV_floracion')
+
+desviacionesStd_fru <- data.frame(c('ORUGAS', 'DEFOLIACION'), stdDev_fructificacion, CV_fructificacion)
+colnames(desviacionesStd_fru) <- c('', 's_fructificacion', 'CV_fructificacion')
+
+print(xtable(desviacionesStd_flo,
              type = 'latex',
              caption = 'Desviacion estandar y sus
-               respectivos coeficientes de variacion',
-             label = 'table:stdDevs'),
-      file = 'stdDevs.tex')
+               respectivos coeficientes de variacion
+               durante la FLORACION',
+             label = 'table:stdDevs_flo'),
+      file = 'stdDevs_flo.tex')
+
+print(xtable(desviacionesStd_fru,
+             type = 'latex',
+             caption = 'Desviacion estandar y sus
+               respectivos coeficientes de variacion
+               durante la FRUCTIFICACION',
+             label = 'table:stdDevs_fru'),
+      file = 'stdDevs_fru.tex')
 
 # diagrama caja con bigotes
 
@@ -172,6 +199,17 @@ plot(hist_fruc,
 # FLORACION: DEFOLIACION >= 30 & ORUGAS >= 20
 # FRUCTIFICACION: DEFOLIACION > 8 & ORUGAS >= 10
 
+# # # # # usando data.table # # # #
+# db[, FUMIGACION := ifelse(
+#   ((ORUGAS > 19 & DEFOLIACION > 29) & DESARROLLO == 'FLORACION') |
+#   ((ORUGAS > 9 & DEFOLIACION > 8) & DESARROLLO == 'FRUCTIFICACION'),
+#   TRUE, FALSE)]
+#
+# * sin filtrar tenemos la misma cantidad
+#
+# db[, .N, .(DESARROLLO, FUMIGACION)][order(DESARROLLO, FUMIGACION)]
+# # # # # # #
+
 # 1. creamos un subconjunto con las condiciones necesarias
 # 2. eliminamos las filas NaN (Not a Number) resultantes de
 #    no cumplir con las condiciones
@@ -227,7 +265,7 @@ print(xtable(tabla_plantaciones,
 
 # encuadramos la tabla completa
 # *** en el script latex debimos hacer modificaciones ***
-print(xtable(dftable,
+print(xtable(head(dftable),
              type = 'latex',
              caption = 'Base de datos modificada',
              label = 'table:dftable'),
@@ -245,3 +283,7 @@ P12 <- 1 - ppois(12, 9)
 P12_fruct <- dftable[DESARROLLO == 'FRUCTIFICACION', .N, ORUGAS > 12]
 
 proporcion <- P12_fruct$N[2] / sum(P12_fruct$N)
+
+## EJERCICIO 4
+#
+#
