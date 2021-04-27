@@ -3,6 +3,23 @@
 # Created by: leandro
 # Created on: 3/19/21
 
+# Normal estandar
+eje_Z <- seq(-4, 4, .01)
+
+f_Z <- dnorm(eje_Z, 0, 1)
+
+plot(eje_Z, f_Z,
+     ylim = c(0, .4),
+     type = 'l',
+     main = '',
+     axes = FALSE,
+     ylab = '',
+     xlab = 'z')
+
+axis(1, at = seq(-4, 4, .5))
+
+axis(2, at = seq(0, .5, .5))
+
 # Ejemplo 6.9 (pp 255)
 mu <- 25.5
 desvStd <- 4.5

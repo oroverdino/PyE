@@ -200,6 +200,7 @@ plot(hist_fruc,
 # FRUCTIFICACION: DEFOLIACION > 8 & ORUGAS >= 10
 
 # # # # # usando data.table # # # #
+# db <- fread('./PlagasSoja.csv')
 # db[, FUMIGACION := ifelse(
 #   ((ORUGAS > 19 & DEFOLIACION > 29) & DESARROLLO == 'FLORACION') |
 #   ((ORUGAS > 9 & DEFOLIACION > 8) & DESARROLLO == 'FRUCTIFICACION'),
@@ -284,6 +285,12 @@ P12_fruct <- dftable[DESARROLLO == 'FRUCTIFICACION', .N, ORUGAS > 12]
 
 proporcion <- P12_fruct$N[2] / sum(P12_fruct$N)
 
-## EJERCICIO 4
+## EJERCICIO 5
 #
-#
+n <- 137
+p0 <- .21
+pS <- .3
+
+z_obs <- (pS - p0) / sqrt(p0 * (1 - p0) / n)
+
+p_value <- 1 - pnorm(z_obs, 0, 1)
